@@ -9,8 +9,8 @@ This is a Compilation of diffrent projects showcasing my expirience.
   * [Python](#Python)
     + [Clasification](#ClassificationPy)
     + [Regression](#RegressionPy)
-  * [DevOPS](#DevOPS)
-    + [Python](#DevopsPython)
+ - [DevOPS](#DevOPS)
+  * [Python](#DevopsPython)
 
 
 # Data Analysis
