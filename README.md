@@ -2,8 +2,8 @@
 
 This is a Compilation of diffrent projects showcasing my expirience.
 
-- [Data Analysis](#Data Analysis)
-  * [Sub-heading](#sub-heading)
+- [Data Analysis](#Data-Analysis)
+  * [R](#R)
     + [Sub-sub-heading](#sub-sub-heading)
 - [Heading](#heading-1)
   * [Sub-heading](#sub-heading-1)
@@ -13,13 +13,13 @@ This is a Compilation of diffrent projects showcasing my expirience.
     + [Sub-sub-heading](#sub-sub-heading-2)
 
 
-# Heading levels
+# Data-Analysis
 
 > This is a fixture to test heading levels
 
 <!-- toc -->
 
-## Data Analysis
+## R
 
 This is an h1 heading
 
