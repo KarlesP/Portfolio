@@ -11,6 +11,9 @@ This is a Compilation of diffrent projects showcasing my expirience.
     + [Regression](#RegressionPy)
 - [DevOps](#DevOps)
   * [Python](#Python)
+- [Pentest](#Pentest)
+  * [Python](#Python)
+    + [Machine Learning for Cybersecurity](#MLCyber)
 
 
 # Data Analysis
@@ -48,5 +51,19 @@ This is an h3 heading
 This is an h1 heading
 
 ## Python
+
+This is an h2 heading
+
+# Pentest
+
+This is an h1 heading
+
+## Python
+
+This is an h2 heading
+
+### Machine Learning for Cybersecurity
+
+## Perl
 
 This is an h2 heading
