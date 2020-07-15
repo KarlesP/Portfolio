@@ -2,7 +2,7 @@
 
 This is a Compilation of diffrent projects showcasing my expirience.
 
-- [Data Analysis](#DataAnalysis)
+- [Data Analysis](#Data-Analysis)
   * [R](#R)
     + [SubClass1](#SubClass1)
   * [Python](#Python)
