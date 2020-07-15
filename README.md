@@ -13,7 +13,7 @@ This is a Compilation of diffrent projects showcasing my expirience.
     + [Sub-sub-heading](#sub-sub-heading-2)
 
 
-# Data-Analysis
+# Data Analysis
 
 > This is a fixture to test heading levels
 
