@@ -9,8 +9,8 @@ This is a Compilation of diffrent projects showcasing my expirience.
   * [Python](#Python)
     + [Clasification](#ClassificationPy)
     + [Regression](#RegressionPy)
- - [DevOPS](#DevOPS)
-  * [Python](#DevopsPython)
+- [DevOps](#DevOps)
+  * [Python](#Python)
 
 
 # Data Analysis
@@ -43,10 +43,10 @@ This is an h2 heading
 
 This is an h3 heading
 
-## DevOPS
+# DevOPS
 
 This is an h1 heading
 
-### Python
+## Python
 
 This is an h2 heading
