@@ -2,7 +2,7 @@
 
 This is a Compilation of diffrent projects showcasing my expirience.
 
-- [Data Analysis](#Data-Analysis)
+- [Data Analysis](#DataAnalysis)
   * [R](#R)
     + [SubClass1](#SubClass1)
   * [Python](#Python)
@@ -21,7 +21,7 @@ This is a Compilation of diffrent projects showcasing my expirience.
     + [HPC](#HPC)
 - [Pentest](#Pentest)
   * [Python](#Python-3)
-    + [Machine Learning for Cybersecurity](####MLCyber)
+    + [Machine Learning for Cybersecurity](#machine-learning-for-cybersecurity)
   * [Pearl](#Pearl)
 
 
