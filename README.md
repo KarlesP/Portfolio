@@ -4,13 +4,13 @@ This is a Compilation of diffrent projects showcasing my expirience.
 
 - [Data Analysis](#Data-Analysis)
   * [R](#R)
-    + [Sub-sub-heading](#sub-sub-heading)
-- [Heading](#heading-1)
-  * [Sub-heading](#sub-heading-1)
-    + [Sub-sub-heading](#sub-sub-heading-1)
-- [Heading](#heading-2)
-  * [Sub-heading](#sub-heading-2)
-    + [Sub-sub-heading](#sub-sub-heading-2)
+    + [Clasification](#ClassificationR)
+    + [Regression](#RegressionR)
+  * [Python](#Python)
+    + [Clasification](#ClassificationPy)
+    + [Regression](#RegressionPy)
+  * [DevOPS](#DevOPS)
+    + [Python](#DevopsPython)
 
 
 # Data Analysis
@@ -23,34 +23,30 @@ This is a Compilation of diffrent projects showcasing my expirience.
 
 This is an h1 heading
 
-### Sub-heading
+### Classification
 
 This is an h2 heading
 
-#### Sub-sub-heading
+#### Regression
 
 This is an h3 heading
 
-## Heading
+## Python
 
 This is an h1 heading
 
-### Sub-heading
+### Classification
 
 This is an h2 heading
 
-#### Sub-sub-heading
+#### Regression
 
 This is an h3 heading
 
-## Heading
+## DevOPS
 
 This is an h1 heading
 
-### Sub-heading
+### Python
 
 This is an h2 heading
-
-#### Sub-sub-heading
-
-This is an h3 heading
