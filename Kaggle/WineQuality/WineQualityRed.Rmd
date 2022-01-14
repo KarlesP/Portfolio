@@ -1,0 +1,684 @@
+---
+title: "Red Wine Quality Simple EDA and Prediction"
+author: "Gabriel Preda"
+date: "Created: 2018-07-09; Last updated:`r Sys.Date()`"
+output:
+  html_document:
+    number_sections: false
+    toc: true
+    fig_width: 8
+    fig_height: 6
+    theme: cosmo
+    highlight: tango
+    code_folding: hide
+---
+
+# **Introduction** 
+
+
+![Red Wine Quality](https://kaggle2.blob.core.windows.net/datasets-images/4458/6836/30587db9a40233164f65a4a3f148f40d/dataset-card.jpg?t=2017-11-12-14-28-34)
+
+This datasets is related to red variants of the Portuguese “Vinho Verde” wine.
+Due to privacy and logistic issues, only physicochemical (inputs) and sensory (the output) variables are available (e.g. there is no data about grape types, wine brand, wine selling price, etc.).
+
+The input features are as follows:  
+
+* `fixed acidity` - most acids involved with wine or fixed or nonvolatile (do not evaporate readily);
+* `volatile acidity` - the amount of acetic acid in wine, which at too high of levels can lead to an unpleasant, vinegar taste;  
+* `citric acid` - found in small quantities, citric acid can add 'freshness' and flavor to wines;  
+* `residual sugar` - the amount of sugar remaining after fermentation stops, it's rare to find wines with less than 1 gram/liter and wines with greater than 45 grams/liter are considered sweet;  
+* `chlorides` - the amount of salt in the wine;  
+* `free sulfur dioxide` - the free form of SO2 exists in equilibrium between molecular SO2 (as a dissolved gas) and bisulfite ion; it prevents microbial growth and the oxidation of wine;  
+* `total sulfur dioxide` - amount of free and bound forms of S02; in low concentrations, SO2 is mostly undetectable in wine, but at free SO2 concentrations over 50 ppm, SO2 becomes evident in the nose and taste of wine;  
+* `density` - the density of water is close to that of water depending on the percent alcohol and sugar content;  
+* `pH` - describes how acidic or basic a wine is on a scale from 0 (very acidic) to 14 (very basic); most wines are between 3-4 on the pH scale;  
+* `sulphates` - a wine additive which can contribute to sulfur dioxide gas (S02) levels, wich acts as an antimicrobial and antioxidant
+* `alcohol` - the percent alcohol content of the wine;
+
+The output feature is:  
+
+* `quality` - output variable (based on sensory data, score between 0 and 10);
+
+
+# **Prerequisites**
+
+We will include in this Kernel one function from a package not present on Kaggle, as follows:  
+
+* **ggbiplot** for representation of data grouped on category in the PCA transform components plane;  
+
+
+The category used in both cases will be the **quality**.
+
+```{r prerequisite_ggbiplot, code_folding: hide}
+#this Kernel uses ggbiplot from https://github.com/vqv/ggbiplot/
+
+# 
+#  ggscreeplot.r
+#
+#  Copyright 2011 Vincent Q. Vu.
+# 
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# 
+
+#' Screeplot for Principal Components
+#'
+#' @param pcobj          an object returned by prcomp() or princomp()
+#' @param type           the type of scree plot.  'pev' corresponds proportion of explained variance, i.e. the eigenvalues divided by the trace. 'cev' corresponds to the cumulative proportion of explained variance, i.e. the partial sum of the first k eigenvalues divided by the trace.
+#' @export
+#' @examples
+#'   data(wine)
+#'   wine.pca <- prcomp(wine, scale. = TRUE)
+#'   print(ggscreeplot(wine.pca))
+#'
+ggscreeplot <- function(pcobj, type = c('pev', 'cev')) 
+{
+  type <- match.arg(type)
+  d <- pcobj$sdev^2
+  yvar <- switch(type, 
+                 pev = d / sum(d), 
+                 cev = cumsum(d) / sum(d))
+
+  yvar.lab <- switch(type,
+                     pev = 'proportion of explained variance',
+                     cev = 'cumulative proportion of explained variance')
+
+  df <- data.frame(PC = 1:length(d), yvar = yvar)
+
+  ggplot(data = df, aes(x = PC, y = yvar)) + 
+    xlab('principal component number') + ylab(yvar.lab) +
+    geom_point() + geom_path()
+}
+
+# 
+#  ggbiplot.r
+#  
+#  Copyright 2011 Vincent Q. Vu.
+# 
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# 
+
+#' Biplot for Principal Components using ggplot2
+#'
+#' @param pcobj           an object returned by prcomp() or princomp()
+#' @param choices         which PCs to plot
+#' @param scale           covariance biplot (scale = 1), form biplot (scale = 0). When scale = 1, the inner product between the variables approximates the covariance and the distance between the points approximates the Mahalanobis distance.
+#' @param obs.scale       scale factor to apply to observations
+#' @param var.scale       scale factor to apply to variables
+#' @param pc.biplot       for compatibility with biplot.princomp()
+#' @param groups          optional factor variable indicating the groups that the observations belong to. If provided the points will be colored according to groups
+#' @param ellipse         draw a normal data ellipse for each group?
+#' @param ellipse.prob    size of the ellipse in Normal probability
+#' @param labels          optional vector of labels for the observations
+#' @param labels.size     size of the text used for the labels
+#' @param alpha           alpha transparency value for the points (0 = transparent, 1 = opaque)
+#' @param circle          draw a correlation circle? (only applies when prcomp was called with scale = TRUE and when var.scale = 1)
+#' @param var.axes        draw arrows for the variables?
+#' @param varname.size    size of the text for variable names
+#' @param varname.adjust  adjustment factor the placement of the variable names, >= 1 means farther from the arrow
+#' @param varname.abbrev  whether or not to abbreviate the variable names
+#'
+#' @return                a ggplot2 plot
+#' @export
+#' @examples
+#'   data(wine)
+#'   wine.pca <- prcomp(wine, scale. = TRUE)
+#'   print(ggbiplot(wine.pca, obs.scale = 1, var.scale = 1, groups = wine.class, ellipse = TRUE, circle = TRUE))
+#'
+ggbiplot <- function(pcobj, choices = 1:2, scale = 1, pc.biplot = TRUE, 
+                      obs.scale = 1 - scale, var.scale = scale, 
+                      groups = NULL, ellipse = FALSE, ellipse.prob = 0.68, 
+                      labels = NULL, labels.size = 3, alpha = 1, 
+                      var.axes = TRUE, 
+                      circle = FALSE, circle.prob = 0.69, 
+                      varname.size = 3, varname.adjust = 1.5, 
+                      varname.abbrev = FALSE, ...)
+{
+  library(ggplot2)
+  library(plyr)
+  library(scales)
+  library(grid)
+
+  stopifnot(length(choices) == 2)
+
+  # Recover the SVD
+ if(inherits(pcobj, 'prcomp')){
+    nobs.factor <- sqrt(nrow(pcobj$x) - 1)
+    d <- pcobj$sdev
+    u <- sweep(pcobj$x, 2, 1 / (d * nobs.factor), FUN = '*')
+    v <- pcobj$rotation
+  } else if(inherits(pcobj, 'princomp')) {
+    nobs.factor <- sqrt(pcobj$n.obs)
+    d <- pcobj$sdev
+    u <- sweep(pcobj$scores, 2, 1 / (d * nobs.factor), FUN = '*')
+    v <- pcobj$loadings
+  } else if(inherits(pcobj, 'PCA')) {
+    nobs.factor <- sqrt(nrow(pcobj$call$X))
+    d <- unlist(sqrt(pcobj$eig)[1])
+    u <- sweep(pcobj$ind$coord, 2, 1 / (d * nobs.factor), FUN = '*')
+    v <- sweep(pcobj$var$coord,2,sqrt(pcobj$eig[1:ncol(pcobj$var$coord),1]),FUN="/")
+  } else if(inherits(pcobj, "lda")) {
+      nobs.factor <- sqrt(pcobj$N)
+      d <- pcobj$svd
+      u <- predict(pcobj)$x/nobs.factor
+      v <- pcobj$scaling
+      d.total <- sum(d^2)
+  } else {
+    stop('Expected a object of class prcomp, princomp, PCA, or lda')
+  }
+
+  # Scores
+  choices <- pmin(choices, ncol(u))
+  df.u <- as.data.frame(sweep(u[,choices], 2, d[choices]^obs.scale, FUN='*'))
+
+  # Directions
+  v <- sweep(v, 2, d^var.scale, FUN='*')
+  df.v <- as.data.frame(v[, choices])
+
+  names(df.u) <- c('xvar', 'yvar')
+  names(df.v) <- names(df.u)
+
+  if(pc.biplot) {
+    df.u <- df.u * nobs.factor
+  }
+
+  # Scale the radius of the correlation circle so that it corresponds to 
+  # a data ellipse for the standardized PC scores
+  r <- sqrt(qchisq(circle.prob, df = 2)) * prod(colMeans(df.u^2))^(1/4)
+
+  # Scale directions
+  v.scale <- rowSums(v^2)
+  df.v <- r * df.v / sqrt(max(v.scale))
+
+  # Change the labels for the axes
+  if(obs.scale == 0) {
+    u.axis.labs <- paste('standardized PC', choices, sep='')
+  } else {
+    u.axis.labs <- paste('PC', choices, sep='')
+  }
+
+  # Append the proportion of explained variance to the axis labels
+  u.axis.labs <- paste(u.axis.labs, 
+                       sprintf('(%0.1f%% explained var.)', 
+                               100 * pcobj$sdev[choices]^2/sum(pcobj$sdev^2)))
+
+  # Score Labels
+  if(!is.null(labels)) {
+    df.u$labels <- labels
+  }
+
+  # Grouping variable
+  if(!is.null(groups)) {
+    df.u$groups <- groups
+  }
+
+  # Variable Names
+  if(varname.abbrev) {
+    df.v$varname <- abbreviate(rownames(v))
+  } else {
+    df.v$varname <- rownames(v)
+  }
+
+  # Variables for text label placement
+  df.v$angle <- with(df.v, (180/pi) * atan(yvar / xvar))
+  df.v$hjust = with(df.v, (1 - varname.adjust * sign(xvar)) / 2)
+
+  # Base plot
+  g <- ggplot(data = df.u, aes(x = xvar, y = yvar)) + 
+          xlab(u.axis.labs[1]) + ylab(u.axis.labs[2]) + coord_equal()
+
+  if(var.axes) {
+    # Draw circle
+    if(circle) 
+    {
+      theta <- c(seq(-pi, pi, length = 50), seq(pi, -pi, length = 50))
+      circle <- data.frame(xvar = r * cos(theta), yvar = r * sin(theta))
+      g <- g + geom_path(data = circle, color = muted('white'), 
+                         size = 1/2, alpha = 1/3)
+    }
+
+    # Draw directions
+    g <- g +
+      geom_segment(data = df.v,
+                   aes(x = 0, y = 0, xend = xvar, yend = yvar),
+                   arrow = arrow(length = unit(1/2, 'picas')), 
+                   color = muted('red'))
+  }
+
+  # Draw either labels or points
+  if(!is.null(df.u$labels)) {
+    if(!is.null(df.u$groups)) {
+      g <- g + geom_text(aes(label = labels, color = groups), 
+                         size = labels.size)
+    } else {
+      g <- g + geom_text(aes(label = labels), size = labels.size)      
+    }
+  } else {
+    if(!is.null(df.u$groups)) {
+      g <- g + geom_point(aes(color = groups), alpha = alpha)
+    } else {
+      g <- g + geom_point(alpha = alpha)      
+    }
+  }
+
+  # Overlay a concentration ellipse if there are groups
+  if(!is.null(df.u$groups) && ellipse) {
+    theta <- c(seq(-pi, pi, length = 50), seq(pi, -pi, length = 50))
+    circle <- cbind(cos(theta), sin(theta))
+
+    ell <- ddply(df.u, 'groups', function(x) {
+      if(nrow(x) <= 2) {
+        return(NULL)
+      }
+      sigma <- var(cbind(x$xvar, x$yvar))
+      mu <- c(mean(x$xvar), mean(x$yvar))
+      ed <- sqrt(qchisq(ellipse.prob, df = 2))
+      data.frame(sweep(circle %*% chol(sigma) * ed, 2, mu, FUN = '+'), 
+                 groups = x$groups[1])
+    })
+    names(ell)[1:2] <- c('xvar', 'yvar')
+    g <- g + geom_path(data = ell, aes(color = groups, group = groups))
+  }
+
+  # Label the variable axes
+  if(var.axes) {
+    g <- g + 
+    geom_text(data = df.v, 
+              aes(label = varname, x = xvar, y = yvar, 
+                  angle = angle, hjust = hjust), 
+              color = 'darkred', size = varname.size)
+  }
+  # Change the name of the legend for groups
+  # if(!is.null(groups)) {
+  #   g <- g + scale_color_brewer(name = deparse(substitute(groups)), 
+  #                               palette = 'Dark2')
+  # }
+
+  # TODO: Add a second set of axes
+
+  return(g)
+}
+
+```
+
+
+# **Read the data**
+
+
+We include the R libraries used for data input, processing, analysis and visualization. We are using pacman for library management.
+
+
+```{r libraries_and_packages_management,message=FALSE,warning=FALSE}
+#use pacman for package management
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(knitr, kableExtra, formattable, dplyr, ggplot2, GGally, caret, corrplot, Rtsne, gbm, caret, reshape2)
+
+options(knitr.table.format = "html") 
+```
+
+
+We read the data.
+
+```{r read_data,message=FALSE,warning=FALSE}
+#PATH="../input/winequality-red/"
+PATH="../input/"
+
+
+wine_df <- read.csv(paste(PATH,"winequality-red.csv",sep=""))
+
+```
+
+
+# **Glimpse the data**
+
+
+We start by showing first 10 rows from the dataset.
+
+```{r glimpse_winequality_red_data}
+kable(head(wine_df,10), "html") %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+
+```
+
+
+Let's apply also `glimpse`.
+
+```{r glimpse_winequality_red_data_1}
+glimpse(wine_df)
+```
+
+
+Let's see also a summary of the data.
+
+
+```{r glimpse_winequality_red_data_2}
+summary(wine_df)
+```
+
+
+The features that characterize the red wine are related to acidity (fixed.acidity, volatile.acidity, citric.acid, pH), sugar (residual.sugar), content of sulfur dioxide which is the substance that  (free.sulfur.dioxide, total.sulfur.dioxide)
+
+# **Data exploration**
+
+
+## Features pairs - combined plot
+
+Let's start by plotting pairs of data using the **GGally** package. This allows us to show on the same graph:  
+
+* the pairs of each features;   
+* the boxplot for each feature, 
+* the density plots of each feature;  
+* the histograms for each feature.  
+
+All these graphs are showing the values grouped by **target** value, i.e. by **quality**.
+
+```{r fig.width=16, fig.height=16, ggpairs_1}
+library(GGally)
+
+wine_df1 <- wine_df
+wine_df1$quality <- as.factor(wine_df1$quality)
+
+
+ggpairs(wine_df1, aes(colour = quality, alpha = 0.4))
+```
+
+We can observe the following, for each feature:  
+
+* `fixed acidity` - besides the smallest quality (3), mean value and variance increases with quality;
+* `volatile acidity` - smaller means and smaller variance results in increasing quality;  
+* `citric acid` - quality increases with the mean value;  
+* `residual sugar` - highest quality has small mean, variance and less outliers;  
+* `chlorides` - highest quality has smaller mean, variance and less outliers;    
+* `free sulfur dioxide` - smaller mean and variance are for both small (3) and high quality (8);  
+* `total sulfur dioxide` - smaller mean and variance are for both small (3) and high quality (8);    
+* `density` - smaller mean, larger variance for higher quality;  
+* `pH` - smaller values for higher quality;  
+* `sulphates` - higher mean, smaller variance, less outliersfor higher quality;  
+* `alcohol` - higher mean values, larger variance, less outliers for higher quality;  
+
+
+Let's visualize pairs of these features with regression curves as well, using facting with ggplot2.  
+
+## Features pairs - regression curves
+
+```{r fig.width=16, fig.height=16, ggplot2_pairs}
+
+require(ggplot2) 
+require(dplyr)
+require(tidyr)
+
+gatherpairs <- function(data, ..., 
+                        xkey = '.xkey', xvalue = '.xvalue',
+                        ykey = '.ykey', yvalue = '.yvalue',
+                        na.rm = FALSE, convert = FALSE, factor_key = FALSE) {
+  vars <- quos(...)
+  xkey <- enquo(xkey)
+  xvalue <- enquo(xvalue)
+  ykey <- enquo(ykey)
+  yvalue <- enquo(yvalue)
+
+  data %>% {
+    cbind(gather(., key = !!xkey, value = !!xvalue, !!!vars,
+                 na.rm = na.rm, convert = convert, factor_key = factor_key),
+          select(., !!!vars)) 
+  } %>% gather(., key = !!ykey, value = !!yvalue, !!!vars,
+               na.rm = na.rm, convert = convert, factor_key = factor_key)
+}
+
+wine_df1 %>% 
+  gatherpairs(fixed.acidity, volatile.acidity, citric.acid, residual.sugar,chlorides) %>% {
+  ggplot(., aes(x = .xvalue, y = .yvalue, color = quality)) +
+      geom_point() + theme_bw() + 
+      geom_smooth(method = 'lm') +
+      facet_wrap(.xkey ~ .ykey, ncol = length(unique(.$.ykey)), scales = 'free', labeller = label_both) +
+      scale_color_brewer(type = 'qual')
+}
+
+```
+
+
+```{r fig.width=16, fig.height=16, ggplot2_pairs2}
+wine_df1 %>% 
+  gatherpairs(free.sulfur.dioxide, total.sulfur.dioxide, density, pH, sulphates, alcohol) %>% {
+  ggplot(., aes(x = .xvalue, y = .yvalue, color = quality)) +
+      geom_point() + theme_bw() + 
+      geom_smooth(method = 'lm') +
+      facet_wrap(.xkey ~ .ykey, ncol = length(unique(.$.ykey)), scales = 'free', labeller = label_both) +
+      scale_color_brewer(type = 'qual')
+  }
+```
+
+
+## Features box plots grouped by quality
+
+Let's show only the box plots for each feature, grouped by quality.
+
+
+```{r fig.width=12, fig.height=12, featurePlot2}
+featurePlot(x = wine_df1[, 1:11], 
+            y = wine_df1$quality, plot = "box", 
+            scales = list(x = list(relation="free"), y = list(relation="free")), 
+            adjust = 1.5, pch = ".", 
+            layout = c(4, 3), auto.key = list(columns = 3))
+
+```
+
+## Features density plots grouped by quality
+
+Let's show only the densityplots for each feature, grouped by quality.
+
+
+```{r fig.width=12, fig.height=12, featurePlot1}
+featurePlot(x = wine_df1[, 1:11], 
+            y = wine_df1$quality, plot = "density", 
+            scales = list(x = list(relation="free"), y = list(relation="free")), 
+            adjust = 1.5, pch = ".", 
+            layout = c(4, 3), auto.key = list(columns = 3))
+
+```
+
+
+Citric acid, alcohol, volatile acidity seems to be good discriminants for the quality, from the inspection of the density plots.
+
+
+## Pearson correlation
+
+
+Let’s investigate as well the correlation between the features using cor function for Pearson correlation.
+
+```{r pearson_correlation}
+nc=ncol(wine_df1)
+df <- wine_df1[,1:11]
+df$quality <- as.integer(wine_df1[,12])
+correlations <- cor(df,method="pearson")
+corrplot(correlations, number.cex = .9, method = "square", 
+         hclust.method = "ward", order = "FPC",
+         type = "full", tl.cex=0.8,tl.col = "black")
+
+```
+
+The following dimmensions are relatively highly correlated:  
+
+* **total.sulfur.dioxide** with **free.sulfur.dioxide**;  
+* **fixed.acidity** with **density** and **citric.acid**;  
+
+The following dimmensions are relatively correlated:  
+
+* **alcohol** with **quality** (this might be a candidate for drop, since might be a leak);  
+
+The following dimmensions are relativelly highly inverse correlated:  
+
+* **fixed.acidity** with **pH**;  
+
+The following dimmensions are relatively inverse correlated:  
+
+* **citric.acid** with **pH** and **volatile.acidity**;  
+
+
+# **Principal Component Analysis**
+
+Let's perform PCA on the data, excluding the **quality** column.
+
+```{r pca_transform}
+q.pca <- prcomp(wine_df[1:11], center=TRUE, scale.=TRUE)
+plot(q.pca, type="l", main='')
+grid(nx = 10, ny = 14)
+title(main = "Principal components weights", sub = NULL, xlab = "Components")
+box()
+
+```
+
+
+First two components are accounting for almost **50%** of the total explained variance. 
+
+We represent the data projected in the plane of the two principal components. The direction of the features are as well represented in the same plane. Two elipses are showing the 0.68 probability boundary for the distribution of the six groups of **quality** (3-8). A circle superposed over the scatter plot data helps to evaluate the relative ratio between the features in the most important principal components plane.
+
+The features with highest dimmensions or aligned with the leading principal component are the ones with highest variance.
+
+
+```{r fig.width=12, fig.height=12, pca_transform_biplot}
+q.diag = wine_df1[,12]
+ggbiplot(q.pca, choices=1:2, obs.scale = 1, var.scale = 1, groups = q.diag, 
+  ellipse = TRUE, circle = TRUE, varname.size = 4, ellipse.prob = 0.68, circle.prob = 0.69) +
+  scale_color_discrete(name = 'Quality (from 3 to 8)') + theme_bw() + 
+  labs(title = "Principal Component Analysis", 
+  subtitle = "1. Data distribution in the plan of PC1 and PC2\n2. Directions of components in the same plane") +
+  theme(legend.direction = 'horizontal', legend.position = 'bottom')
+```
+
+
+Both **free.sulfur.dioxide** and **total.sulfur.dioxide** are almost ligned with 2nd PCA component (PC2) accounting for **17.5%** of the feature explained variation whilst **pH** is aligned with 1st PCA component (PC1), accounting for **28.2%** of the feature explained variation.
+
+# **t-SNE transform**
+
+While PCA is a linear algorithm, t-SNE is a non-linear dimensionality reduction algorithm. It finds patterns in the data by identifying observed clusters based on similarity of data points wiht multiple features. In the same time, it is not a clustering algorithm, it is a dimmensionality reduction algorithm that can be used as a data exploration and visualization technique.
+
+```{r fig.width=12, fig.height=8,t-sne}
+library(Rtsne)
+colors = rainbow(length(unique(q.diag)))
+names(colors) = unique(q.diag)
+
+
+tsne <- Rtsne(wine_df[1:11], dims = 2, perplexity=10, verbose=TRUE, max_iter = 500, check_duplicates = FALSE)
+plot(tsne$Y, t='n', main="t-Distributed Stochastic Neighbor Embedding (t-SNE)",
+     xlab="t-SNE 1st dimm.", ylab="t-SNE 2nd dimm.")
+text(tsne$Y, labels=q.diag, cex=0.9, col=colors[q.diag])
+
+```
+
+# **Predictive model using Gradient Boosting Machine (GBM)**
+
+Let’s prepare a simple GBM model. We will use as well cross validation with 5 folds.
+
+Let's split the dataset in two parts, train and test set. we reserve **80%** of the data for training and **20%** will be used for testing.
+
+```{r data_split}
+
+nrows <- nrow(wine_df1)
+set.seed(2018)
+indexT <- sample(1:nrow(df), 0.8 * nrows)
+
+#separate train and validation set
+trainset = df[indexT,]
+testset =   df[-indexT,]
+
+n <- names(trainset)
+```
+
+Let's put the data in the format needed for GBM. We will use cross-validation with 5 folds and `multinomial` distribution.
+
+```{r gbm_matrices}
+
+n<-names(trainset)
+gbm.form <- as.formula(paste("quality ~", paste(n[!n %in% "quality"], collapse = " + ")))
+gbmCV = gbm(formula = gbm.form,
+            distribution = "multinomial",
+            data = trainset,
+            n.trees=500,
+            interaction.depth=4,
+            cv.folds=5,
+            shrinkage=0.2,
+            n.cores = 2)
+
+```
+
+In order to find the best number of trees to use for the prediction for the test data, we can use `gbm.perf` function. This function returns the optimal number of trees for prediction.
+
+```{r gbm_best_nodes_number, echo=FALSE, message=FALSE}
+optimalTreeNumberPredictionCV = gbm.perf(gbmCV)
+```
+
+We use the optimal number of trees in the prediction. The optimal number of trees is ``r optimalTreeNumberPredictionCV``.
+
+```{r gbm_predict}
+
+pred = predict(gbmCV,n.trees=optimalTreeNumberPredictionCV, newdata=testset,type='response')
+testset$predicted <- apply(pred, 1, which.max)
+```
+
+We represent the confusion matrix.
+
+```{r confusion_matrix}
+plotConfusionMatrix <- function(testset, sSubtitle) {
+    tst <- confusionMatrix(testset$predicted, testset$quality)
+    tst <- data.frame(melt(tst$table))
+    names(tst)<-c("Predicted","True","Count")
+
+    ggplot(data =  tst, mapping = aes(x = True, y = Predicted)) +
+      labs(title = "Confusion matrix", subtitle = sSubtitle) +
+      geom_tile(aes(fill = Count), colour = "grey") +
+      geom_text(aes(label = sprintf("%1.0f", Count)), vjust = 1) +
+      scale_fill_gradient(low = "gold", high = "tomato") +
+      theme_bw() + theme(legend.position = "none")
+}
+```
+
+
+```{r fig.width=5, fig.height=5, confusion_matrix2}
+plotConfusionMatrix(testset,sprintf("Prediction using GBM with %d (optimal number of) trees",optimalTreeNumberPredictionCV))
+```
+
+Let's see more details about the confusion matrix.
+
+```{r confusion_matrix_2}
+confusionMatrix(testset$predicted, testset$quality)
+```
+
+# **Conclusions**
+
+Preliminary data analysis shows that some of the features could be good predictors for quality, especially combining them. We will continue to update this Kernel to investigate efficiency of several models to predict red wine quality. 
+Principal Component Analysis shows that a part of the components are aligned with the two most important Principal Components PC1 and PC2. t-Distributed Stochastic Neighbor Embedding (t-SNE) did not show concludent results.
+
+We split then the data in training and test set. We used then Gradient Boosting Machine with cross-validation with 5 folds to build a model, with target value the quality. We used then the model with optimal number of trees to predict the quality for the test set.
+
+
+# **References**
+
+
+[1] Create a matrix of scatterplots (pairs() equivalent) in ggplot2, https://stackoverflow.com/questions/3735286/create-a-matrix-of-scatterplots-pairs-equivalent-in-ggplot2  
+[2] GGally R package: Extension to ggplot2 for correlation matrix and survival plots - R software and data visualization, http://www.sthda.com/english/wiki/ggally-r-package-extension-to-ggplot2-for-correlation-matrix-and-survival-plots-r-software-and-data-visualization  
+
+
