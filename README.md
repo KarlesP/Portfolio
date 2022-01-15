@@ -1,30 +1,12 @@
 # Portfolio
 
-This is a Compilation of diffrent projects showcasing my expirience.
+This is a Compilation of diffrent projects showcasing my working and academic expirience.
 
-- [Data Analysis](#Data-Analysis)
-  * [R](#R)
-    + [SubClass1](#SubClass1)
-  * [Python](#Python)
-    + [SubClass2](#SubClass2)
+- [Kaggle](#Data-Analysis)
+- 
 - [DevOps](#devops)
-  * [Python](#Python-1)
-- [Machine Learning](#Machine-Learning)
-  * [R](#R-1)
-    + [Clasification](#Classification)
-    + [Regression](#Regression)
-  * [Python](#Python-2)
-    + [Clasification](#Classification-1)
-    + [Regression](#Regression-1)
-  * [C++](#C++)
-    + [Cuda](#Cuda)
-    + [HPC](#HPC)
-- [Pentest](#Pentest)
-  * [Python](#Python-3)
-    + [Machine Learning for Cybersecurity](#machine-learning-for-cybersecurity)
-  * [Pearl](#Pearl)
-
-
+- [Deep Learning](#Machine-Learning)
+  
 ## Data Analysis
 
 > This is a fixture to test heading levels
