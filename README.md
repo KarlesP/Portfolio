@@ -1,11 +1,11 @@
+
 # Portfolio
 
 This is a Compilation of diffrent projects showcasing my working and academic expirience.
 
-- [Kaggle](#Data-Analysis)
-- 
-- [DevOps](#devops)
-- [Deep Learning](#Machine-Learning)
+- [Kaggle](#Kaggle
+- [DevOps](#Devops)
+- [Deep Learning](#Cuda)
   
 ## Data Analysis
 
@@ -79,4 +79,3 @@ This is an h2 heading
 This is an h1 heading
 
 ### Perl
-This is an h1 heading
