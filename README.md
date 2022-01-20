@@ -3,7 +3,7 @@
 
 This is a Compilation of diffrent projects showcasing my working and academic expirience.
 
-- [Kaggle](#Kaggle
+- [Kaggle](#Kaggle)
 - [DevOps](#Devops)
 - [Deep Learning](#Cuda)
   
