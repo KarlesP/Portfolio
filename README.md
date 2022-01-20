@@ -5,77 +5,16 @@ This is a Compilation of diffrent projects showcasing my working and academic ex
 
 - [Kaggle](#Kaggle)
 - [DevOps](#Devops)
-- [Deep Learning](#Cuda)
+- [Cuda](#Cuda)
   
-## Data Analysis
 
-> This is a fixture to test heading levels
 
-<!-- toc -->
+## Kaggle
+A compilation of jupyter notebooks that showcase some of my work as a data scientist.
 
-### R
+## DevOps
+A repo that gathers Python stack for DevOps, these are usually my basic templates use for my implementations.
 
-This is an h1 heading
+## Cuda
+An experiimental repo with some code examples that I have used so that I can understand better the cuda library.
 
-#### SubClass1
-
-This is an h2 heading
-
-### Python
-
-This is an h1 heading
-
-#### SubClass2
-
-This is an h2 heading
-
-## DevOPS
-
-This is an h1 heading
-
-### Python
-
-This is an h2 heading
-
-## Machine Learning
-This is an h1 heading
-
-### R
-This is an h1 heading
-
-#### Classification
-This is an h1 heading
-
-#### Regression
-This is an h1 heading
-
-### Python
-This is an h1 heading
-
-#### Classification
-This is an h1 heading
-
-#### Regression
-This is an h1 heading
-
-### C++
-This is an h1 heading
-
-#### Cuda
-This is an h1 heading
-
-#### HPC
-This is an h1 heading
-
-## Pentest
-
-This is an h1 heading
-
-### Python
-
-This is an h2 heading
-
-#### Machine Learning for Cybersecurity
-This is an h1 heading
-
-### Perl
