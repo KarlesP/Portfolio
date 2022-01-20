@@ -6,7 +6,7 @@ This is a Compilation of diffrent projects showcasing my working and academic ex
 - [Kaggle](#Kaggle)
 - [DevOps](#Devops)
 - [Cuda](#Cuda)
-  
+- [.Net](#DotNet)
 
 
 ## Kaggle
